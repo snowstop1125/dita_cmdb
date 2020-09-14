@@ -40,7 +40,7 @@
           <el-input
             :key="passwordType"
             ref="pwd"
-            v-model="password"
+            v-model="loginForm.pwd"
             :type="passwordType"
             placeholder="请输入密码"
             name="password"
@@ -58,12 +58,11 @@
             <svg-icon icon-class="password" />
           </span>
           <el-input
-            :key="passwordType"
             ref="code"
             v-model="loginForm.code"
             placeholder="请输入验证码"
             name="code"
-            tabindex="2"
+            tabindex="3"
             auto-complete="on"
             @keyup.enter.native="handleLogin"
           />
@@ -76,11 +75,6 @@
           style="width:100%;margin-bottom:30px;"
           @click.native.prevent="handleLogin"
         >登录</el-button>
-      </div>
-
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span>password: any</span>
       </div>
     </el-form>
     <img class="bg-1" src="@/assets/login/bg_1.png" />
@@ -105,8 +99,10 @@ export default {
     }
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
+        callback(new Error('密码不能少于6位数'))
+      } else if (value.indexOf(' ') >= 0) {
+        callback(new Error('密码不能包含空格'))
+      }else{
         callback()
       }
     }
@@ -140,9 +136,19 @@ export default {
     }
   },
   created() {
-    getCaptcha().then((res) => {
-      this.captchaSrc = res.data
+    getCaptcha({responseType: 'arraybuffer'}).then((res) => {
+      // return 'data:image/png;base64,' + btoa(
+      //   new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      // )
+      //这里就是将得到的图片流转换成blob类型
+      const blob = new Blob([res.data], {
+        type: 'application/png;charset=utf-8',
+      });
+      const url = window.URL.createObjectURL(blob);
+      this.captchaSrc = url;
+      // this.captchaSrc = 'data:image/jpeg;base64,' + res.data
     })
+    // this.captchaSrc = process.env.VUE_APP_BASE_API + '/portal/login!captcha1'
     
   },
   mounted() {},
@@ -154,17 +160,24 @@ export default {
         this.passwordType = 'password'
       }
       this.$nextTick(() => {
-        this.$refs.password.focus()
+        this.$refs.pwd.focus()
       })
     },
     handleLogin() {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           this.loading = true
-          this.loginForm.pwd = this.CalcuMD5(this.password)
-          console.log(this.loginForm)
+          this.password = this.CalcuMD5(this.loginForm.pwd)
+          
+          let req = {
+            username: this.loginForm.username,
+            pwd: this.password,
+            code: this.loginForm.code
+          }
+
+          console.log(req)
           this.$store
-            .dispatch('user/login', this.loginForm)
+            .dispatch('user/login', req)
             .then(() => {
               this.$router.push({ path: this.redirect || '/' })
               this.loading = false
