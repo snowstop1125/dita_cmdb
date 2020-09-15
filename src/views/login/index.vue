@@ -65,8 +65,9 @@
             tabindex="3"
             auto-complete="on"
             @keyup.enter.native="handleLogin"
+            style="width:140px;"
           />
-          <img :src="captchaSrc" />
+          <img class="code-img" :src="captchaSrc" />
         </el-form-item>
 
         <el-button
@@ -102,7 +103,7 @@ export default {
         callback(new Error('密码不能少于6位数'))
       } else if (value.indexOf(' ') >= 0) {
         callback(new Error('密码不能包含空格'))
-      }else{
+      } else {
         callback()
       }
     }
@@ -116,9 +117,7 @@ export default {
         username: [
           { required: true, trigger: 'blur', validator: validateUsername }
         ],
-        pwd: [
-          { required: true, trigger: 'blur', validator: validatePassword }
-        ]
+        pwd: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
       password: 'Dita@123',
@@ -136,20 +135,14 @@ export default {
     }
   },
   created() {
-    getCaptcha({responseType: 'arraybuffer'}).then((res) => {
-      // return 'data:image/png;base64,' + btoa(
-      //   new Uint8Array(res.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      // )
+    getCaptcha().then((res) => {
       //这里就是将得到的图片流转换成blob类型
       const blob = new Blob([res.data], {
-        type: 'application/png;charset=utf-8',
-      });
-      const url = window.URL.createObjectURL(blob);
-      this.captchaSrc = url;
-      // this.captchaSrc = 'data:image/jpeg;base64,' + res.data
+        type: 'application/png;charset=utf-8'
+      })
+      const url = window.URL.createObjectURL(blob)
+      this.captchaSrc = url
     })
-    // this.captchaSrc = process.env.VUE_APP_BASE_API + '/portal/login!captcha1'
-    
   },
   mounted() {},
   methods: {
@@ -168,7 +161,7 @@ export default {
         if (valid) {
           this.loading = true
           this.password = this.CalcuMD5(this.loginForm.pwd)
-          
+
           let req = {
             username: this.loginForm.username,
             pwd: this.password,
@@ -178,9 +171,20 @@ export default {
           console.log(req)
           this.$store
             .dispatch('user/login', req)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/' })
-              this.loading = false
+            .then((res) => {
+              if (res === 'loginsuccess') {
+                this.$router.push({ path: '/' })
+                // this.$router.push({ path: this.redirect || '/' })
+                this.loading = false
+              } else {
+                // this.updataCode()
+                this.$message({
+                  message: res,
+                  type: 'error',
+                  duration: 3 * 1000
+                })
+                this.loading = false
+              }
             })
             .catch(() => {
               this.loading = false
@@ -284,6 +288,10 @@ $light_gray: #eee;
     .loginForm-right {
       width: 330px;
       float: right;
+    }
+    .code-img {
+      display: inline-block;
+      vertical-align: middle;
     }
   }
 
