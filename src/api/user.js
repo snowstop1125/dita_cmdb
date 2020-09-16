@@ -30,16 +30,10 @@ export function login(data) {
 // }
 
 export function logout() {
+  let data = reData()
   return request({
     url: '/portal/logout!index',
     method: 'post',
-    data: {
-      "con": '',
-      "head": {
-        "token": "",
-        "cmd":10000,
-        "ver":"1.0"
-      }
-    }
+    data
   })
 }

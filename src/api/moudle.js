@@ -1,6 +1,6 @@
 import { getToken } from '@/utils/auth'
 
-export function reData(data,ver = '1.0') {
+export function reData(data = {},ver = '1.0') {
   let obj = {
     "con": data,
     "head": {

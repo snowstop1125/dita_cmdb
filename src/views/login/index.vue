@@ -65,7 +65,7 @@
             tabindex="3"
             auto-complete="on"
             @keyup.enter.native="handleLogin"
-            style="width:140px;"
+            style="width:180px;"
           />
           <img class="code-img" :src="captchaSrc" />
         </el-form-item>
@@ -292,6 +292,7 @@ $light_gray: #eee;
     .code-img {
       display: inline-block;
       vertical-align: middle;
+      width: 120px;
     }
   }
 

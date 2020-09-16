@@ -35,10 +35,9 @@ const actions = {
       login({ username: username.trim(), pwd: pwd, code: code }).then(response => {
         console.log(response)
         if (response.status === 200 && response.data.head.st == 0) {
-         
-          const { data } = response.data
-          commit('SET_TOKEN', data.token)
-          setToken(data.token)
+          const data = response.data
+          commit('SET_TOKEN', data.body.token)
+          setToken(data.body.token)
           resolve('loginsuccess')
         } else {
           resolve(response.data.head.msg)
